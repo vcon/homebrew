@@ -295,6 +295,14 @@ Please take one of the following actions:
         append_to_cflags "-mcpu=#{cpu_type}"
         append_to_cflags "-mtune=#{cpu_type}"
       end
+      # For 10.4 we need to add system paths for /usr/X11R6 since some
+      # non-X libraries have been installed there that are normally found
+      # in /usr on 10.5 and later systems (e.g. expat)
+      if MACOS_VERSION == 10.4
+        append_to_cflags '-isystem /usr/X11R6/include'
+        append 'CPPFLAGS', '-isystem /usr/X11R6/include'
+        append 'LDFLAGS', '-L/usr/X11R6/lib'
+      end
     end
   end
 
