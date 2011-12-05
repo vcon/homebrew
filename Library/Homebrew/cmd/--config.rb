@@ -45,7 +45,7 @@ module Homebrew extend self
     HOMEBREW_CELLAR: #{HOMEBREW_CELLAR}
     HOMEBREW_REPOSITORY: #{HOMEBREW_REPOSITORY}
     HOMEBREW_LIBRARY_PATH: #{HOMEBREW_LIBRARY_PATH}
-    Hardware: #{Hardware.cores_as_words}-core #{Hardware.bits}-bit #{Hardware.intel_family}
+    Hardware: #{Hardware.cores_as_words}-core #{Hardware.bits}-bit #{Hardware.any_family}
     OS X: #{MACOS_FULL_VERSION}
     Kernel Architecture: #{`uname -m`.chomp}
     Ruby: #{RUBY_VERSION}-#{RUBY_PATCHLEVEL}

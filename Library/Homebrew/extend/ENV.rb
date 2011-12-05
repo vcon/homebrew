@@ -283,8 +283,20 @@ Please take one of the following actions:
     remove_from_cflags %r{( -Xclang \S+)+}
     remove_from_cflags %r{-mssse3}
     remove_from_cflags %r{-msse4(\.\d)?}
+    if Hardware.cpu_type == :intel
     # Don't set -msse3 and older flags because -march does that for us
     append_to_cflags xarch + '-march=' + map.fetch(Hardware.intel_family, default)
+    else
+      case Hardware.ppc_family
+      when :powerpc_603ev
+        append_to_cflags '-mcpu=603e'
+        append_to_cflags '-mtune=603e'
+      else
+        cpu_type = Hardware.ppc_family.to_s.split('_').last
+        append_to_cflags "-mcpu=#{cpu_type}"
+        append_to_cflags "-mtune=#{cpu_type}"
+      end
+    end
   end
 
   # actually c-compiler, so cc would be a better name

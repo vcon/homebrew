@@ -24,11 +24,10 @@ module Homebrew extend self
     install_formulae ARGV.formulae
   end
 
-  def check_ppc
-    case Hardware.cpu_type when :ppc, :dunno
+  def check_dunno
+    case Hardware.cpu_type when :dunno
       abort <<-EOS.undent
         Sorry, Homebrew does not support your computer's CPU architecture.
-        For PPC support, see: http://github.com/sceaga/homebrew/tree/powerpc
         EOS
     end
   end
@@ -72,7 +71,7 @@ module Homebrew extend self
   end
 
   def perform_preinstall_checks
-    check_ppc
+    check_dunno
     check_writable_install_location
     check_cc
     check_macports
