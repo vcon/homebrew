@@ -2,14 +2,14 @@ Homebrew
 ========
 Features, usage and installation instructions are [summarized on the homepage][home].
 
-This is a [fork adding basic PowerPC support][ppcfork], so it will update from
+This is a [fork adding basic Tiger support][ppcfork], so it will update from
 that fork by default instead of the master Homebrew branch.
 
 Quick Install to /usr/local
 ---------------------------
-To quickly install the PowerPC branch under /usr/local, use the following:
+To quickly install the Tiger branch under /usr/local, use the following:
 
-  `curl -Lsf http://github.com/sceaga/homebrew/tarball/powerpc | tar -xvzf - -C/usr/local --strip 1`
+  `curl -Lsf http://github.com/sceaga/homebrew/tarball/tiger | tar -xvzf - -C/usr/local --strip 1`
 
 Then install git and run an update:
 
@@ -42,4 +42,4 @@ I'm [Max Howell][mxcl] and I'm a splendid chap.
 [wiki]:http://wiki.github.com/mxcl/homebrew
 [mxcl]:http://twitter.com/mxcl
 [formula]:http://github.com/mxcl/homebrew/tree/master/Library/Formula/
-[ppcfork]:http://github.com/sceaga/homebrew/tree/powerpc
+[ppcfork]:http://github.com/sceaga/homebrew/tree/tiger
