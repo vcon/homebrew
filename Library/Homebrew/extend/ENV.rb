@@ -223,6 +223,8 @@ Please take one of the following actions:
 
   # i386 and x86_64 (no PPC)
   def universal_binary
+    return if Hardware.cpu_type == :ppc
+
     append_to_cflags '-arch i386 -arch x86_64'
     replace_in_cflags '-O4', '-O3' # O4 seems to cause the build to fail
     append 'LDFLAGS', '-arch i386 -arch x86_64'
