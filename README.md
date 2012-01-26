@@ -9,7 +9,7 @@ Quick Install to /usr/local
 ---------------------------
 To quickly install the Tiger branch under /usr/local, use the following:
 
-  `curl -Lsf http://github.com/sceaga/homebrew/tarball/tiger | tar -xvzf - -C/usr/local --strip 1`
+  `curl -Lksf http://github.com/sceaga/homebrew/tarball/tiger | tar -xvzf - -C/usr/local --strip 1`
 
 Then install git and run an update:
 
