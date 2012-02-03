@@ -84,7 +84,7 @@ class Pathname
     raise unless e.errno == Errno::ENOTEMPTY::Errno or e.errno == Errno::EACCES::Errno
     false
   end
-  
+
   def chmod_R perms
     require 'fileutils'
     # FileUtils in Ruby 1.8.2 on 10.4 does not support chmod_R,
@@ -145,7 +145,7 @@ class Pathname
     # eg. ruby-1.9.1-p243
     /-((\d+\.)*\d\.\d+-(p|rc|RC)?\d+)$/.match stem
     return $1 if $1
-    
+
     # eg. lame-398-1
     /-((\d)+-\d)/.match stem
     return $1 if $1
@@ -191,7 +191,7 @@ class Pathname
 
     nil
   end
-  
+
   def incremental_hash(hasher)
     incr_hash = hasher.new
     self.open('r') do |f|
@@ -206,12 +206,12 @@ class Pathname
     require 'digest/md5'
     incremental_hash(Digest::MD5)
   end
-  
+
   def sha1
     require 'digest/sha1'
     incremental_hash(Digest::SHA1)
   end
-  
+
   def sha2
     require 'digest/sha2'
     incremental_hash(Digest::SHA2)
@@ -284,6 +284,20 @@ class Pathname
       end
     end
   end
+
+  def install_info
+    unless self.symlink?
+      raise "Cannot install info entry for unbrewed info file '#{self}'"
+    end
+    system '/usr/bin/install-info', self.to_s, (self.dirname+'dir').to_s
+  end
+
+  def uninstall_info
+    unless self.symlink?
+      raise "Cannot uninstall info entry for unbrewed info file '#{self}'"
+    end
+    system '/usr/bin/install-info', '--delete', '--quiet', self.to_s, (self.dirname+'dir').to_s
+  end
 end
 
 # sets $n and $d so you can observe creation of stuff
@@ -307,6 +321,14 @@ module ObserverPathnameExtension
     super
     puts "ln #{to_s}" if ARGV.verbose?
     $n+=1
+  end
+  def install_info
+    super
+    puts "info #{to_s}" if ARGV.verbose?
+  end
+  def uninstall_info
+    super
+    puts "uninfo #{to_s}" if ARGV.verbose?
   end
 end
 
