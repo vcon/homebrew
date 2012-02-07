@@ -8,6 +8,8 @@ class Atomicparsley < Formula
   md5 '4c271090aa5a36596696a5d460f2c6fe'
   version '2011.03.23'
 
+  head 'https://bitbucket.org/wez/atomicparsley', :using => :hg
+
   def install
     system "./autogen.sh"
     system "./configure", "--prefix=#{prefix}",
