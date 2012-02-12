@@ -1,10 +1,10 @@
 require 'formula'
 
 class Gmp < Formula
-  url 'http://ftpmirror.gnu.org/gmp/gmp-5.0.2.tar.bz2'
-  mirror 'http://ftp.gnu.org/gnu/gmp/gmp-5.0.2.tar.bz2'
   homepage 'http://gmplib.org/'
-  sha1 '2968220e1988eabb61f921d11e5d2db5431e0a35'
+  url 'http://ftpmirror.gnu.org/gmp/gmp-5.0.4.tar.bz2'
+  mirror 'http://ftp.gnu.org/gnu/gmp/gmp-5.0.4.tar.bz2'
+  sha1 'ea4ea7c3f10436ef5ae7a75b3fad163a8b86edc0'
 
   def options
     [
