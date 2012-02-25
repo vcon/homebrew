@@ -232,7 +232,7 @@ class FormulaInstaller
   def check_manpages
     # Check for man pages that aren't in share/man
     if (f.prefix+'man').exist?
-      opoo 'A top-level "man" folder was found.'
+      opoo 'A top-level "man" directory was found.'
       puts "Homebrew requires that man pages live under share."
       puts 'This can often be fixed by passing "--mandir=#{man}" to configure.'
       @show_summary_heading = true
@@ -242,7 +242,7 @@ class FormulaInstaller
   def check_infopages
     # Check for info pages that aren't in share/info
     if (f.prefix+'info').exist?
-      opoo 'A top-level "info" folder was found.'
+      opoo 'A top-level "info" directory was found.'
       puts "Homebrew suggests that info pages live under share."
       puts 'This can often be fixed by passing "--infodir=#{info}" to configure.'
       @show_summary_heading = true
@@ -319,7 +319,10 @@ def external_dep_check dep, type
     when :python then %W{/usr/bin/env python -c import\ #{dep}}
     when :jruby then %W{/usr/bin/env jruby -rubygems -e require\ '#{dep}'}
     when :ruby then %W{/usr/bin/env ruby -rubygems -e require\ '#{dep}'}
+    when :rbx then %W{/usr/bin/env rbx -rubygems -e require\ '#{dep}'}
     when :perl then %W{/usr/bin/env perl -e use\ #{dep}}
+    when :chicken then %W{/usr/bin/env csi -e (use #{dep})}
+    when :node then %W{/usr/bin/env node -e require('#{dep}');}
   end
 end
 
@@ -343,7 +346,7 @@ class Formula
   end
 
   def check_external_deps
-    [:ruby, :python, :perl, :jruby].each do |type|
+    [:ruby, :python, :perl, :jruby, :rbx, :chicken, :node].each do |type|
       self.external_deps[type].each do |dep|
         unless quiet_system(*external_dep_check(dep, type))
           raise UnsatisfiedExternalDependencyError.new(dep, type)
