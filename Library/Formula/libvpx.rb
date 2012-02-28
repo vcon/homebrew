@@ -41,11 +41,8 @@ class Libvpx < Formula
     # see http://code.google.com/p/webm/issues/detail?id=401
     # Determine if the computer runs Darwin 9, 10, or 11 using uname -r.
     osver = %x[uname -r | cut -d. -f1].chomp
-    if MacOS.prefer_64_bit? then
-      args << "--target=x86_64-darwin#{osver}-gcc"
-    else
-      args << "--target=x86-darwin#{osver}-gcc"
-    end
+
+    args << "--target=ppc32-darwin#{osver}-gcc"
 
     mkdir 'macbuild' do
       system "../configure", *args
