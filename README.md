@@ -2,7 +2,7 @@ Homebrew
 ========
 Features, usage and installation instructions are [summarized on the homepage][home].
 
-This is a [fork adding basic Tiger support][ppcfork], so it will update from
+This is a [fork adding basic Tiger support][tigerfork], so it will update from
 that fork by default instead of the master Homebrew branch.
 
 Quick Install to /usr/local
@@ -44,4 +44,4 @@ I'm [Max Howell][mxcl] and I'm a splendid chap.
 [mxcl]:http://twitter.com/mxcl
 [formula]:http://github.com/mxcl/homebrew/tree/master/Library/Formula/
 [braumeister]:http://braumeister.org
-[ppcfork]:http://github.com/sceaga/homebrew/tree/tiger
+[tigerfork]:http://github.com/sceaga/homebrew/tree/tiger

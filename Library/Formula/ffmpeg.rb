@@ -59,11 +59,9 @@ class Ffmpeg < Formula
     args << "--enable-libass" if Formula.factory('libass').installed?
     args << "--disable-ffplay" unless ffplay?
 
-    # For 32-bit compilation under gcc 4.2, see:
-    # http://trac.macports.org/ticket/20938#comment:22
-    if MacOS.leopard? or Hardware.is_32_bit?
-      ENV.append_to_cflags "-mdynamic-no-pic"
-    end
+    # The -mdynamic-no-pic causes build failures with leopard/powerpc
+    # (32-bit, gcc 4.2) when compiling some internal libraries of ffmpeg
+    # 0.10.  So, we *don't* append it to CFLAGS.
 
     system "./configure", *args
 
