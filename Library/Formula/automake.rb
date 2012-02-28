@@ -2,8 +2,9 @@ require 'formula'
 
 class Automake < Formula
   homepage 'http://www.gnu.org/software/automake/'
-  url 'http://ftpmirror.gnu.org/automake/automake-1.11.tar.gz'
-  md5 'fab0bd2c3990a6679adaf9eeac0c6d2a'
+  url 'http://ftpmirror.gnu.org/automake/automake-1.11.3.tar.gz'
+  mirror 'http://ftp.gnu.org/gnu/automake/automake-1.11.3.tar.gz'
+  md5 '93ecb319f0365cb801990b00f658d026'
 
   depends_on "autoconf"
 
@@ -16,18 +17,13 @@ class Automake < Formula
                           "--prefix=#{prefix}"
     system "make install"
 
-    (share/"aclocal-#{version}/dirlist").write <<-EOS.undent
+    (share/"aclocal/dirlist").write <<-EOS.undent
       /usr/share/aclocal
       #{HOMEBREW_PREFIX}/share/aclocal
       EOS
   end
 
   def test
-    # This test will fail and we won't accept that! It's enough to just
-    # replace "false" with the main program this formula installs, but
-    # it'd be nice if you were more thorough. Test the test with
-    # `brew test automake`. Remove this comment before submitting
-    # your pull request!
-    system "#{HOMEBREW_PREFIX}/bin/automake --version"
+    system "#{bin}/automake --version"
   end
 end
