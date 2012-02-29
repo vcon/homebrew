@@ -6,7 +6,7 @@ class Mad < Formula
   md5 '1be543bc30c56fb6bea1d7bf6a64e66c'
 
   def install
-    fpm = MacOS.prefer_64_bit? ? '64bit': 'intel'
+    fpm = 'ppc'
     system "./configure", "--disable-debugging", "--enable-fpm=#{fpm}", "--prefix=#{prefix}"
     system "make", "CFLAGS=#{ENV.cflags}", "LDFLAGS=#{ENV.ldflags}", "install"
     (lib+'pkgconfig/mad.pc').write mad_pc
