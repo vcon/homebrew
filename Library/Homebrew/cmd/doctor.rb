@@ -208,8 +208,8 @@ def check_for_latest_xcode
     else "4.3"
   end
   if MacOS.xcode_version < latest_xcode then <<-EOS.undent
-    Your Xcode version is outdated
-    Please install Xcode #{v}.
+    You have Xcode-#{MacOS.xcode_version}, which is outdated.
+    Please install Xcode #{latest_xcode}.
     EOS
   end
 end
@@ -357,7 +357,7 @@ def check_xcode_select_path
       these is (probably) what you want:
 
           sudo xcode-select -switch /Developer
-          sudo xcode-select -switch /Application/Xcode.app
+          sudo xcode-select -switch /Applications/Xcode.app
     EOS
   end
 end
@@ -715,11 +715,18 @@ def check_tmpdir
 end
 
 def check_missing_deps
-  s = `brew missing`.strip
+  s = []
+  `brew missing`.each_line do |line|
+    line =~ /(.*): (.*)/
+    s << $2 unless s.include? $2
+  end
   if s.length > 0 then <<-EOS.undent
-    You have missing dependencies for install formula
-    You should `brew install` these missing dependencies:
-    #{s}
+    Some installed formula are missing dependencies.
+    You should `brew install` the missing dependencies:
+
+        brew install #{s * " "}
+
+    Run `brew missing` for more details.
     EOS
   end
 end
