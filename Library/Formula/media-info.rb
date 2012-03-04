@@ -8,25 +8,7 @@ class MediaInfo < Formula
   depends_on 'pkg-config' => :build
 
   def install
-    cd 'ZenLib/Project/GNU/Library' do
-      system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                            "--prefix=#{prefix}"
-      system "make"
-    end
-
-    cd "MediaInfoLib/Project/GNU/Library" do
-      args = ["--disable-debug",
-              "--disable-dependency-tracking",
-              "--with-libcurl",
-              "--prefix=#{prefix}"]
-      system "./configure", *args
-      system "make install"
-    end
-
-    cd "MediaInfo/Project/GNU/CLI" do
-      system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                            "--prefix=#{prefix}"
-      system "make install"
-    end
+    system "./CLI_Compile.sh --prefix=#{prefix}"
+    system "cd MediaInfo/Project/GNU/CLI && make install"
   end
 end
