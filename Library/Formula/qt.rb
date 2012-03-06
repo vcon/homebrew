@@ -61,13 +61,7 @@ class Qt < Formula
       args << "-nomake" << "demos" << "-nomake" << "examples"
     end
 
-    if MacOS.prefer_64_bit? or ARGV.build_universal?
-      args << '-arch' << 'x86_64'
-    end
-
-    if !MacOS.prefer_64_bit? or ARGV.build_universal?
-      args << '-arch' << 'x86'
-    end
+    args << '-arch' << 'ppc'
 
     if ARGV.include? '--with-debug-and-release'
       args << "-debug-and-release"
