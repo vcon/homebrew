@@ -6,7 +6,7 @@ class TokyoCabinet < Formula
   md5 '3d94fe2aebf5d9ff0478ed895bc46fc9'
 
   def install
-    system "./configure", "--prefix=#{prefix}", "--enable-fastest"
+    system "./configure", "--prefix=#{prefix}"
     system "make"
     system "make install"
   end
