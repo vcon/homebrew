@@ -61,13 +61,7 @@ class Qt < Formula
       args << "-nomake" << "demos" << "-nomake" << "examples"
     end
 
-    if MacOS.prefer_64_bit? or ARGV.build_universal?
-      args << '-arch' << 'x86_64'
-    end
-
-    if !MacOS.prefer_64_bit? or ARGV.build_universal?
-      args << '-arch' << 'x86'
-    end
+    args << '-arch' << 'ppc'
 
     if ARGV.include? '--with-debug-and-release'
       args << "-debug-and-release"
@@ -77,10 +71,6 @@ class Qt < Formula
     else
       args << "-release"
     end
-
-    # Compilation currently fails with the newer versions of clang
-    # shipped with Xcode 4.3+
-    ENV.llvm if MacOS.clang_version.to_f <= 3.1
 
     system "./configure", *args
     system "make"
