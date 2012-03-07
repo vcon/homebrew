@@ -15,27 +15,11 @@ class Fftw < Formula
     # check for gfortran
     args << "--disable-fortran" unless which 'gfortran'
 
-    # single precision
-    # enable-sse only works with single
+    # enable-altivec
     system "./configure", "--enable-single",
-                          "--enable-sse",
+                          "--enable-altivec",
+                          "--enable-fma",
                           *args
-    system "make install"
-
-    # clean up so we can compile the double precision variant
-    system "make clean"
-
-    # double precision
-    # enable-sse2 only works with double precision (default)
-    system "./configure", "--enable-sse2", *args
-    system "make install"
-
-    # clean up so we can compile the long-double precision variant
-    system "make clean"
-
-    # long-double precision
-    # no SIMD optimization available
-    system "./configure", "--enable-long-double", *args
     system "make install"
 
     #wtf file?
