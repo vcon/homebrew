@@ -28,6 +28,10 @@ class Gpac < Formula
   depends_on 'ffmpeg' => :optional if ARGV.build_head?
   depends_on 'openjpeg' => :optional if ARGV.build_head?
 
+  def patches
+    DATA
+  end
+
   def options
     [['--with-lowercase', 'Install binaries with lowercase names']]
   end
@@ -63,3 +67,16 @@ class Gpac < Formula
     system "make install"
   end
 end
+
+__END__
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -181,7 +181,7 @@
+ 
+ LD_SONAME="-Wl,-soname,$(LIB)"
+ ifeq ($(CONFIG_DARWIN), yes)
+-LD_SONAME=""
++LD_SONAME=
+ endif
+ 
+ 
