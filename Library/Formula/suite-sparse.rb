@@ -6,7 +6,6 @@ class SuiteSparse < Formula
   md5 'ecb1d1cc1101cf31f077bab46678e791'
 
   depends_on "metis"
-  depends_on "tbb"
 
   def install
     # SuiteSparse doesn't like to build in parallel
@@ -35,8 +34,6 @@ class SuiteSparse < Formula
       s.change_make_var! "LAPACK", "$(BLAS)"
       s.remove_make_var! "METIS_PATH"
       s.change_make_var! "METIS", metis.lib + 'libmetis.a'
-      s.change_make_var! "SPQR_CONFIG", "-DHAVE_TBB"
-      s.change_make_var! "TBB", "-ltbb"
 
       # Installation
       s.change_make_var! "INSTALL_LIB", lib
