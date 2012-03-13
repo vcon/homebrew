@@ -2,8 +2,8 @@ require 'formula'
 
 class Qt < Formula
   homepage 'http://qt.nokia.com/'
-  url 'http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.8.0.tar.gz'
-  md5 'e8a5fdbeba2927c948d9f477a6abe904'
+  url 'http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.tar.gz'
+  md5 '9831cf1dfa8d0689a06c2c54c5c65aaf'
 
   bottle do
     url 'https://downloads.sf.net/project/machomebrew/Bottles/qt-4.8.0-bottle.tar.gz'
@@ -25,11 +25,6 @@ class Qt < Formula
   depends_on "d-bus" if ARGV.include? '--with-qtdbus'
   depends_on 'sqlite' if MacOS.leopard?
 
-  # Fix compilation with llvm-gcc. Remove for 4.8.1.
-  def patches
-    "https://qt.gitorious.org/qt/qt/commit/448ab7cd150ab7bb7d12bcac76bc2ce1c72298bd?format=patch"
-  end
-
   def install
     # Needed for Qt 4.8.0 due to attempting to link moc with gcc.
     ENV['LD'] = ENV['CXX']
@@ -40,7 +35,8 @@ class Qt < Formula
             "-system-libpng", "-system-zlib",
             "-L/usr/X11/lib", "-I/usr/X11/include",
             "-confirm-license", "-opensource",
-            "-cocoa", "-fast" ]
+            "-cocoa", "-fast",
+            "-platform", "macx-g++42"]
 
     # See: https://github.com/mxcl/homebrew/issues/issue/744
     args << "-system-sqlite" if MacOS.leopard?
