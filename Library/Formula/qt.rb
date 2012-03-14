@@ -18,7 +18,6 @@ class Qt < Formula
       ['--with-qt3support', "Enable deprecated Qt3Support module."],
       ['--with-demos-examples', "Enable Qt demos and examples."],
       ['--with-debug-and-release', "Compile Qt in debug and release mode."],
-      ['--universal', "Build both x86_64 and x86 architectures."],
     ]
   end
 
