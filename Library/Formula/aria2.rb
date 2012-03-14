@@ -9,7 +9,7 @@ class Aria2 < Formula
 
   def install
     system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
+                          "--prefix=#{prefix}", "--without-sqlite3"
     system "make install"
   end
 end
