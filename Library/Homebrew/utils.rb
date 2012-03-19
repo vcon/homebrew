@@ -156,13 +156,18 @@ def command_exists cmd
   return result
 end
 
-def which cmd
+def which cmd, silent=false
+  cmd += " 2>/dev/null" if silent
   path = `/usr/bin/which #{cmd}`.chomp
   if path.empty?
     nil
   else
     Pathname.new(path)
   end
+end
+
+def which_s cmd
+  which cmd, true
 end
 
 def which_editor
@@ -396,6 +401,8 @@ module MacOS extend self
 
   def xcode_version
     @xcode_version ||= begin
+      return "0" unless MACOS
+
       # this shortcut makes xcode_version work for people who don't realise you
       # need to install the CLI tools
       xcode43build = "/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild"
@@ -407,7 +414,7 @@ module MacOS extend self
       # Xcode 4.3 xc* tools hang indefinately if xcode-select path is set thus
       raise if `xcode-select -print-path 2>/dev/null`.chomp == "/"
 
-      raise unless system "/usr/bin/which -s xcodebuild"
+      raise unless which_s "xcodebuild"
       `xcodebuild -version 2>/dev/null` =~ /Xcode (\d(\.\d)*)/
       raise if $1.nil? or not $?.success?
       $1
@@ -486,9 +493,10 @@ module MacOS extend self
     # http://github.com/mxcl/homebrew/issues/#issue/13
     # http://github.com/mxcl/homebrew/issues/#issue/41
     # http://github.com/mxcl/homebrew/issues/#issue/48
+    return false unless MACOS
 
     %w[port fink].each do |ponk|
-      path = `/usr/bin/which -s #{ponk}`
+      path = `/usr/bin/which #{ponk} 2>/dev/null`
       return ponk unless path.empty?
     end
 

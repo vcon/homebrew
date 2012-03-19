@@ -61,8 +61,16 @@ end
 
 HOMEBREW_LOGS = Pathname.new('~/Library/Logs/Homebrew/').expand_path
 
-MACOS_FULL_VERSION = `/usr/bin/sw_vers -productVersion`.chomp
-MACOS_VERSION = /(10\.\d+)(\.\d+)?/.match(MACOS_FULL_VERSION).captures.first.to_f
+if RUBY_PLATFORM =~ /darwin/
+  MACOS_FULL_VERSION = `/usr/bin/sw_vers -productVersion`.chomp
+  MACOS_VERSION = /(10\.\d+)(\.\d+)?/.match(MACOS_FULL_VERSION).captures.first.to_f
+  OS_VERSION = "Mac OS X #{MACOS_FULL_VERSION}"
+  MACOS = true
+else
+  MACOS_FULL_VERSION = MACOS_VERSION = 0
+  OS_VERSION = RUBY_PLATFORM
+  MACOS = false
+end
 
 def _get_patchlevel
   begin; RUBY_PATCHLEVEL; rescue; 0; end

@@ -102,7 +102,7 @@ class CurlDownloadStrategy < AbstractDownloadStrategy
       end
       chdir
     when /^\xFD7zXZ\x00/ # xz compressed
-      raise "You must install XZutils: brew install xz" unless system "/usr/bin/which -s xz"
+      raise "You must install XZutils: brew install xz" unless which_s "xz"
       safe_system "xz -dc \"#{@tarball_path}\" | /usr/bin/tar xf -"
       chdir
     when '____pkg'
@@ -203,7 +203,14 @@ end
 class CurlBottleDownloadStrategy < CurlDownloadStrategy
   def initialize url, name, version, specs
     super
-    @tarball_path = HOMEBREW_CACHE/"#{name}-#{version}.#{MacOS.cat}.bottle#{ext}"
+    @tarball_path = HOMEBREW_CACHE/"#{name}-#{version}#{ext}"
+
+    unless @tarball_path.exist?
+      old_bottle_path = HOMEBREW_CACHE/"#{name}-#{version}#{bottle_suffix}"
+      old_bottle_path = HOMEBREW_CACHE/"#{name}-#{version}-bottle.tar.gz" unless old_bottle_path.exist?
+      old_bottle_path = HOMEBREW_CACHE/"#{name}-#{version}.#{MacOS.cat}.bottle-bottle.tar.gz" unless old_bottle_path.exist?
+      FileUtils.mv old_bottle_path, @tarball_path if old_bottle_path.exist?
+    end
   end
   def stage
     ohai "Pouring #{File.basename(@tarball_path)}"
@@ -338,7 +345,7 @@ class GitDownloadStrategy < AbstractDownloadStrategy
   end
 
   def fetch
-    raise "You must install Git: brew install git" unless system "/usr/bin/which -s git"
+    raise "You must install Git: brew install git" unless which_s "git"
 
     ohai "Cloning #{@url}"
 
@@ -459,7 +466,7 @@ class MercurialDownloadStrategy < AbstractDownloadStrategy
   def cached_location; @clone; end
 
   def fetch
-    raise "You must install Mercurial: brew install mercurial" unless system "/usr/bin/which -s hg"
+    raise "You must install Mercurial: brew install mercurial" unless which_s "hg"
 
     ohai "Cloning #{@url}"
 
@@ -500,8 +507,7 @@ class BazaarDownloadStrategy < AbstractDownloadStrategy
   def cached_location; @clone; end
 
   def fetch
-    raise "You must install bazaar first" \
-          unless system "/usr/bin/which -s bzr"
+    raise "You must install bazaar first" unless which_s "bzr"
 
     ohai "Cloning #{@url}"
     unless @clone.exist?
@@ -544,8 +550,7 @@ class FossilDownloadStrategy < AbstractDownloadStrategy
   def cached_location; @clone; end
 
   def fetch
-    raise "You must install fossil first" \
-          unless system "/usr/bin/which -s fossil"
+    raise "You must install fossil first" unless which_s "fossil"
 
     ohai "Cloning #{@url}"
     unless @clone.exist?
