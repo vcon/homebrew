@@ -51,18 +51,6 @@ class Gpac < Formula
 
     system "chmod +x configure"
     system "./configure", *args
-
-    system "chmod", "+rw", "Makefile"
-    ["MP4Box","MP4Client"].each do |name|
-      filename = "applications/#{name.downcase}/Makefile"
-      system "chmod", "+rw", filename
-
-      if ARGV.include? '--with-lowercase'
-        inreplace filename, name, name.downcase
-        inreplace "Makefile", name, name.downcase
-      end
-    end
-
     system "make"
     system "make install"
   end
