@@ -25,9 +25,6 @@ class Qt < Formula
   depends_on 'sqlite' if MacOS.leopard?
 
   def install
-    # Needed for Qt 4.8.0 due to attempting to link moc with gcc.
-    ENV['LD'] = ENV['CXX']
-
     ENV.x11
     ENV.append "CXXFLAGS", "-fvisibility=hidden"
     args = ["-prefix", prefix,
@@ -96,6 +93,10 @@ class Qt < Formula
       framework_name = File.basename(File.dirname(path), '.framework')
       ln_s path.realpath, include+framework_name
     end
+  end
+
+  def test
+    "#{bin}/qmake --version"
   end
 
   def caveats; <<-EOS.undent

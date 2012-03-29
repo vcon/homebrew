@@ -94,6 +94,9 @@ end
 require 'fileutils'
 module Homebrew extend self
   include FileUtils
+
+  attr_accessor :failed
+  alias_method :failed?, :failed
 end
 
 FORMULA_META_FILES = %w[README README.md ChangeLog CHANGES COPYING LICENSE LICENCE COPYRIGHT AUTHORS]
