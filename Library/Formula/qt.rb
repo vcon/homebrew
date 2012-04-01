@@ -12,6 +12,10 @@ class Qt < Formula
 
   head 'git://gitorious.org/qt/qt.git', :branch => 'master'
 
+  fails_with :clang do
+    build 318
+  end
+
   def options
     [
       ['--with-qtdbus', "Enable QtDBus module."],
