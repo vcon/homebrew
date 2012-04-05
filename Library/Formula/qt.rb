@@ -2,12 +2,11 @@ require 'formula'
 
 class Qt < Formula
   homepage 'http://qt.nokia.com/'
-  url 'http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.7.4.tar.gz'
-  md5 '9831cf1dfa8d0689a06c2c54c5c65aaf'
+  url 'http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.8.1.tar.gz'
+  md5 '7960ba8e18ca31f0c6e4895a312f92ff'
 
   bottle do
-    url 'https://downloads.sf.net/project/machomebrew/Bottles/qt-4.8.0-bottle.tar.gz'
-    sha1 '2bfe00c5112b0d2a680cd01144701f8937846096'
+    sha1 'd523bfbc1c7e50cdd10b64b1b10db187ec7e7c2b' => :lion
   end
 
   head 'git://gitorious.org/qt/qt.git', :branch => 'master'
@@ -68,6 +67,9 @@ class Qt < Formula
       args << "-release"
     end
 
+    # Needed for Qt 4.8.1 due to attempting to link moc with gcc.
+    ENV['LD'] = ENV['CXX']
+
     system "./configure", *args
     system "make"
     ENV.j1
@@ -90,7 +92,7 @@ class Qt < Formula
       ln_s lib, "Frameworks"
     end
 
-    # The pkg-config files installed suggest that geaders can be found in the
+    # The pkg-config files installed suggest that headers can be found in the
     # `include` directory. Make this so by creating symlinks from `include` to
     # the Frameworks' Headers folders.
     Pathname.glob(lib + '*.framework/Headers').each do |path|
