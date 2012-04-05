@@ -8,9 +8,13 @@ class Jack < Formula
   depends_on 'celt'
   depends_on 'libsamplerate'
 
-  # default build assumes ppc+i386, changed to i386+x86_64
+  # Default build assumes ppc+i386, changed to ppc only as it would fail when
+  # compiling the i386 binary with ppc specific things (e.g., -mtune=7450)
   def patches
-    "https://gist.github.com/raw/636194/jack-1.9.6_homebrew.patch"
+    { :p1 => ['https://raw.github.com/gist/2305104/dfc4fe70/jack-1.9.7_no_forced_use_of_ncurses.patch',
+              'https://raw.github.com/gist/2305104/be0bcb69/jack-1.9.7_no_x86.patch']
+    }
+
   end
 
   def install
