@@ -9,7 +9,7 @@ class SuiteSparse < Formula
 
   def install
     # SuiteSparse doesn't like to build in parallel
-    ENV.deparallelize
+    ENV.j1
 
     # So, SuiteSparse was written by a scientific researcher.  This
     # tends to result in makefile-based build systems that are completely
@@ -24,11 +24,6 @@ class SuiteSparse < Formula
     metis = Formula.factory("metis")
 
     inreplace 'UFconfig/UFconfig.mk' do |s|
-      # Compilers
-      s.change_make_var! "CC", ENV.cc
-      s.change_make_var! "CFLAGS", ENV.cflags
-      s.change_make_var! "CPLUSPLUS", ENV.cxx
-
       # Libraries
       s.change_make_var! "BLAS", "-Wl,-framework -Wl,Accelerate"
       s.change_make_var! "LAPACK", "$(BLAS)"
@@ -39,9 +34,6 @@ class SuiteSparse < Formula
       s.change_make_var! "INSTALL_LIB", lib
       s.change_make_var! "INSTALL_INCLUDE", include
     end
-
-    # Remove a stray Lib prefix
-    inreplace 'UFconfig/Makefile', %r|Lib/|, ''
 
     system "make library"
 
