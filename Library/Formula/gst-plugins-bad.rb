@@ -20,7 +20,6 @@ class GstPluginsBad < Formula
   depends_on 'faac' => :optional
   depends_on 'faad2' => :optional
   depends_on 'libsndfile' => :optional
-  depends_on 'schroedinger' => :optional
   depends_on 'rtmpdump' => :optional
 
   def install
