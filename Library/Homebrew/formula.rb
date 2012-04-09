@@ -468,8 +468,6 @@ private
     end
   end
 
-  CHECKSUM_TYPES=[:md5, :sha1, :sha256].freeze
-
 public
 
   # For brew-fetch and others.
