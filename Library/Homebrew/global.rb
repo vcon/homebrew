@@ -77,7 +77,7 @@ def _get_patchlevel
 end
 
 HOMEBREW_CURL_ARGS = '-qf#LA'
-HOMEBREW_USER_AGENT = "Homebrew #{HOMEBREW_VERSION} (Ruby #{RUBY_VERSION}-#{RUBY_PATCHLEVEL}; Mac OS X #{MACOS_FULL_VERSION})"
+HOMEBREW_USER_AGENT = "Homebrew #{HOMEBREW_VERSION} (Ruby #{RUBY_VERSION}-#{_get_patchlevel}; Mac OS X #{MACOS_FULL_VERSION})"
 
 # Ruby 1.8.2 on 10.4 is missing the Object method instance_variable_defined?,
 # so we need to define one for later use by formula.rb code.
