@@ -139,30 +139,22 @@ def puts_columns items, star_items=[]
 end
 
 # Basic command "which" check that works for 10.4 and later.
-# The 10.4 version of which does not support -s, but 10.5 and
-# later does.
-def command_exists cmd
-  result = false
-  if MACOS_VERSION == 10.4
-    path = `/usr/bin/which #{cmd}`
-    if /^no /.match(path) or path.empty?
-      result = false
-    else
-      result = true
-    end
-  else
-    result = system "/usr/bin/which -s #{cmd}"
-  end
-  return result
-end
-
+# The 10.4 version of which does not support -s, but 10.5 and later does.
 def which cmd, silent=false
   cmd += " 2>/dev/null" if silent
   path = `/usr/bin/which #{cmd}`.chomp
-  if path.empty?
-    nil
+  if MACOS_VERSION == 10.4
+    if /^no /.match(path) or path.empty?
+      nil
+    else
+      Pathname.new(path)
+    end
   else
-    Pathname.new(path)
+    if path.empty?
+      nil
+    else
+      Pathname.new(path)
+    end
   end
 end
 
@@ -176,9 +168,9 @@ def which_editor
   return editor unless editor.nil?
 
   # Find Textmate
-  return 'mate' if command_exists "mate"
+  return 'mate' if which_s "mate"
   # Find # BBEdit / TextWrangler
-  return 'edit' if command_exists "edit"
+  return 'edit' if which_s "edit"
   # Default to vim
   return '/usr/bin/vim'
 end
