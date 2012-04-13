@@ -7,6 +7,9 @@ class Mp4v2 < Formula
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking", "--prefix=#{prefix}"
+    system "make"
     system "make install"
+    system "make install-man"
   end
 end
+
