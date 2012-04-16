@@ -21,9 +21,8 @@ class Fuse4xKext < Formula
       "-alltargets",
       "MACOSX_DEPLOYMENT_TARGET=#{MACOS_VERSION}",
       "SYMROOT=build",
-      # Build a 32-bit kernel extension on Leopard and a fat binary for Snow
-      # Leopard/Lion.
-      "ARCHS=i386 #{'x86_64' if MacOS.prefer_64_bit?}", 'ONLY_ACTIVE_ARCH=NO'
+      "GCC_PREPROCESSOR_DEFINITIONS='FUSE4X_DISABLE_MACFUSE_MODE'",
+      "ARCHS=ppc", "ONLY_ACTIVE_ARCH=NO"
     ]
 
     system "/usr/bin/xcodebuild", *args
