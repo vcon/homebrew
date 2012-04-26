@@ -6,9 +6,9 @@ end
 
 class Fuse4xKext < Formula
   homepage 'http://fuse4x.org/'
-  url 'https://github.com/fuse4x/kext/tarball/fuse4x_0_10_0'
-  md5 'f7b3946926e97e9d5cfb1db916152b61'
-  version "0.10.0"
+  # NOTE: Version 0.10 contains a nasty race condition. Wait for 0.10.1
+  url 'https://github.com/fuse4x/kext.git', :tag => "fuse4x_0_9_0"
+  version "0.9.0"
 
   def install
     ENV.delete('CC')
