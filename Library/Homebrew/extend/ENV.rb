@@ -144,6 +144,13 @@ module HomebrewEnvExtension
     self['CXX'] = xcrun "g++-4.2"
     self['OBJC'] = self['CC']
 
+    if (not self['CC']) and (10.4 == MACOS_VERSION)
+      self['CC'] = xcrun "gcc"
+      self['LD'] = self['CC']
+      self['CXX'] = xcrun "g++"
+      self['OBJC'] = self['CC']
+    end
+
     unless self['CC']
       self['CC'] = "#{HOMEBREW_PREFIX}/bin/gcc-4.2"
       self['LD'] = self['CC']
