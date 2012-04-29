@@ -21,7 +21,7 @@ module Homebrew extend self
   end
 
   def github_fork
-    if system "/usr/bin/which -s git"
+    if (MACOS_VERSION == 10.4 and not (system "/usr/bin/which git".match /^no git/)) or system "/usr/bin/which -s git"
       if `git remote -v` =~ %r{origin\s+(https?://|git(?:@|://))github.com[:/](.+)/homebrew}
         $2
       end

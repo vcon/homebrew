@@ -481,7 +481,7 @@ module MacOS extend self
   end
 
   def x11_installed?
-    Pathname.new('/usr/X11/lib/libpng.dylib').exist?
+    Pathname.new('/usr/X11/lib/libpng.dylib').exist? or (10.4 == MACOS_VERSION and Pathname.new('/usr/X11R6/lib/X11/lbxproxy').exist?)
   end
 
   def macports_or_fink_installed?
@@ -493,7 +493,7 @@ module MacOS extend self
 
     %w[port fink].each do |ponk|
       path = `/usr/bin/which #{ponk} 2>/dev/null`
-      return ponk unless path.empty?
+      return ponk unless path.empty? or path =~ /^no #{ponk}/
     end
 
     # we do the above check because macports can be relocated and fink may be

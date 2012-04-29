@@ -144,6 +144,13 @@ module HomebrewEnvExtension
     self['CXX'] = xcrun "g++-4.2"
     self['OBJC'] = self['CC']
 
+    if (not self['CC']) and (10.4 == MACOS_VERSION)
+      self['CC'] = xcrun "gcc"
+      self['LD'] = self['CC']
+      self['CXX'] = xcrun "g++"
+      self['OBJC'] = self['CC']
+    end
+
     unless self['CC']
       self['CC'] = "#{HOMEBREW_PREFIX}/bin/gcc-4.2"
       self['LD'] = self['CC']
@@ -265,12 +272,21 @@ Please take one of the following actions:
     opoo "You do not have X11 installed, this formula may not build." if not MacOS.x11_installed?
 
     # There are some config scripts (e.g. freetype) here that should go in the path
-    prepend 'PATH', '/usr/X11/bin', ':'
-    # CPPFLAGS are the C-PreProcessor flags, *not* C++!
-    append 'CPPFLAGS', '-I/usr/X11/include'
-    append 'LDFLAGS', '-L/usr/X11/lib'
-    # CMake ignores the variables above
-    append 'CMAKE_PREFIX_PATH', '/usr/X11', ':'
+    if 10.4 == MACOS_VERSION
+      prepend 'PATH', '/usr/X11R6/bin', ':'
+      # CPPFLAGS are the C-PreProcessor flags, *not* C++!
+      append 'CPPFLAGS', '-I/usr/X11R6/include'
+      append 'LDFLAGS', '-L/usr/X11R6/lib'
+      # CMake ignores the variables above
+      append 'CMAKE_PREFIX_PATH', '/usr/X11R6', ':'
+    else
+      prepend 'PATH', '/usr/X11/bin', ':'
+      # CPPFLAGS are the C-PreProcessor flags, *not* C++!
+      append 'CPPFLAGS', '-I/usr/X11/include'
+      append 'LDFLAGS', '-L/usr/X11/lib'
+      # CMake ignores the variables above
+      append 'CMAKE_PREFIX_PATH', '/usr/X11', ':'
+    end
   end
   alias_method :libpng, :x11
 

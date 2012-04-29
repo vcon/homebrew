@@ -212,6 +212,7 @@ def check_for_latest_xcode
   end
 
   latest_xcode = case MacOS.version
+    when 10.4 then "2.5"
     when 10.5 then "3.1.4"
     when 10.6 then "3.2.6"
     else "4.3"
@@ -274,7 +275,7 @@ end
 def check_access_usr_local
   return unless HOMEBREW_PREFIX.to_s == '/usr/local'
 
-  unless Pathname('/usr/local').writable? then <<-EOS.undent
+  unless Pathname.new('/usr/local').writable? then <<-EOS.undent
     The /usr/local directory is not writable.
     Even if this directory was writable when you installed Homebrew, other
     software may change permissions on this directory. Some versions of the
@@ -365,7 +366,11 @@ def check_xcode_prefix
 end
 
 def check_xcode_select_path
-  path = `xcode-select -print-path 2>/dev/null`.chomp
+  if 10.4 == MACOS_VERSION
+    path = '/Developer' # No xcode-select on Tiger
+  else
+    path = `xcode-select -print-path 2>/dev/null`.chomp
+  end
   unless File.directory? path and File.file? "#{path}/usr/bin/xcodebuild"
     # won't guess at the path they should use because it's too hard to get right
     # We specify /Applications/Xcode.app/Contents/Developer even though
@@ -453,7 +458,7 @@ end
 
 def check_which_pkg_config
   binary = `/usr/bin/which pkg-config`.chomp
-  return if binary.empty?
+  return if binary.empty? or binary =~ /^no pkg-config/
 
   unless binary == "#{HOMEBREW_PREFIX}/bin/pkg-config"
     <<-EOS.undent
@@ -468,7 +473,7 @@ end
 
 def check_pkg_config_paths
   binary = `/usr/bin/which pkg-config`.chomp
-  return if binary.empty?
+  return if binary.empty? or binary =~ /^no pkg-config/
 
   # Use the debug output to determine which paths are searched
   pkg_config_paths = []
@@ -827,7 +832,7 @@ end
 def check_for_bad_python_symlink
   return unless which_s "python"
   # Indeed Python --version outputs to stderr (WTF?)
-  `python --version 2>&1` =~ /Python (\d+)\./
+  `python -V 2>&1` =~ /Python (\d+)\./
   unless $1 == "2" then <<-EOS.undent
     python is symlinked to python#$1
     This will confuse build scripts and in general lead to subtle breakage.
@@ -887,6 +892,14 @@ def check_os_version
       return <<-EOS.undent
         Please update Leopard.
         10.5.8 is the supported version of Leopard.
+        You are still running #{MACOS_FULL_VERSION}.
+      EOS
+    end
+  elsif MACOS_FULL_VERSION =~ /^10\.4(\.|$)/
+    unless (MACOS_FULL_VERSION == "10.4.11")
+      return <<-EOS.undent
+        Please update Tiger.
+        10.4.11 is the supported version of Tiger.
         You are still running #{MACOS_FULL_VERSION}.
       EOS
     end
