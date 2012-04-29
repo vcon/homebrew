@@ -890,6 +890,14 @@ def check_os_version
         You are still running #{MACOS_FULL_VERSION}.
       EOS
     end
+  elsif MACOS_FULL_VERSION =~ /^10\.4(\.|$)/
+    unless (MACOS_FULL_VERSION == "10.4.11")
+      return <<-EOS.undent
+        Please update Tiger.
+        10.4.11 is the supported version of Tiger.
+        You are still running #{MACOS_FULL_VERSION}.
+      EOS
+    end
   end
 end
 
