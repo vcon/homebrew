@@ -493,7 +493,7 @@ module MacOS extend self
 
     %w[port fink].each do |ponk|
       path = `/usr/bin/which #{ponk} 2>/dev/null`
-      return ponk unless path.empty?
+      return ponk unless path.empty? or path =~ /^no #{ponk}/
     end
 
     # we do the above check because macports can be relocated and fink may be
