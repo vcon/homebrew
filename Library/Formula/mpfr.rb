@@ -15,6 +15,8 @@ class Mpfr < Formula
     args = ["--disable-dependency-tracking", "--prefix=#{prefix}"]
 
     system "./configure", *args
+    system "make"
+    system "make check"
     system "make install"
   end
 end
