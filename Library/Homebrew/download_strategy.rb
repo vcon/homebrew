@@ -91,7 +91,7 @@ class CurlDownloadStrategy < AbstractDownloadStrategy
       end
       chdir
     when :xz
-      raise "You must install XZutils: brew install xz" unless which_s "xz"
+      raise "You must install XZutils: brew install xz" unless which "xz"
       safe_system "xz -dc \"#{@tarball_path}\" | /usr/bin/tar xf -"
       chdir
     when :pkg
@@ -333,7 +333,7 @@ class GitDownloadStrategy < AbstractDownloadStrategy
   end
 
   def fetch
-    raise "You must install Git: brew install git" unless which_s "git"
+    raise "You must install Git: brew install git" unless which "git"
 
     ohai "Cloning #{@url}"
 
@@ -466,7 +466,7 @@ class MercurialDownloadStrategy < AbstractDownloadStrategy
   def cached_location; @clone; end
 
   def fetch
-    raise "You must install Mercurial: brew install mercurial" unless which_s "hg"
+    raise "You must install Mercurial: brew install mercurial" unless which "hg"
 
     ohai "Cloning #{@url}"
 
@@ -507,7 +507,7 @@ class BazaarDownloadStrategy < AbstractDownloadStrategy
   def cached_location; @clone; end
 
   def fetch
-    raise "You must install bazaar first" unless which_s "bzr"
+    raise "You must install bazaar first" unless which "bzr"
 
     ohai "Cloning #{@url}"
     unless @clone.exist?
@@ -550,7 +550,7 @@ class FossilDownloadStrategy < AbstractDownloadStrategy
   def cached_location; @clone; end
 
   def fetch
-    raise "You must install fossil first" unless which_s "fossil"
+    raise "You must install fossil first" unless which "fossil"
 
     ohai "Cloning #{@url}"
     unless @clone.exist?

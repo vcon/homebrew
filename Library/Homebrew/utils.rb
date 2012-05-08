@@ -149,9 +149,8 @@ end
 
 # Basic command "which" check that works for 10.4 and later.
 # The 10.4 version of which does not support -s, but 10.5 and later does.
-def which cmd, silent=false
-  cmd += " 2>/dev/null" if silent
-  path = `/usr/bin/which #{cmd}`.chomp
+def which cmd
+  path = `/usr/bin/which #{cmd} 2>/dev/null`.chomp
   if MACOS_VERSION == 10.4
     if /^no /.match(path) or path.empty?
       nil
@@ -167,19 +166,15 @@ def which cmd, silent=false
   end
 end
 
-def which_s cmd
-  which cmd, true
-end
-
 def which_editor
   editor = ENV['HOMEBREW_EDITOR'] || ENV['EDITOR']
   # If an editor wasn't set, try to pick a sane default
   return editor unless editor.nil?
 
   # Find Textmate
-  return 'mate' if which_s "mate"
+  return 'mate' if which "mate"
   # Find # BBEdit / TextWrangler
-  return 'edit' if which_s "edit"
+  return 'edit' if which "edit"
   # Default to vim
   return '/usr/bin/vim'
 end
@@ -415,7 +410,7 @@ module MacOS extend self
       # Xcode 4.3 xc* tools hang indefinately if xcode-select path is set thus
       raise if `xcode-select -print-path 2>/dev/null`.chomp == "/"
 
-      raise unless which_s "xcodebuild"
+      raise unless which "xcodebuild"
       `xcodebuild -version 2>/dev/null` =~ /Xcode (\d(\.\d)*)/
       raise if $1.nil? or not $?.success?
       $1
