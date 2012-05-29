@@ -16,7 +16,7 @@ class Openssl < Formula
                shared
              ]
 
-    args << (MacOS.prefer_64_bit? ? "darwin64-x86_64-cc" : "darwin-i386-cc")
+    args << (MacOS.prefer_64_bit? ? "darwin64-ppc-cc" : "darwin-ppc-cc")
 
     system "perl", *args
 
