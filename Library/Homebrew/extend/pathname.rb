@@ -1,8 +1,11 @@
 require 'pathname'
 require 'bottles'
+require 'mach'
 
 # we enhance pathname to make our code more readable
 class Pathname
+  include MachO
+
   def install *sources
     results = []
     sources.each do |src|
@@ -272,6 +275,10 @@ class Pathname
       # Assume it is not an archive
       nil
     end
+  end
+
+  def text_executable?
+    %r[#!\s*(/.+)+] === open('r') { |f| f.readline }
   end
 
   def incremental_hash(hasher)
