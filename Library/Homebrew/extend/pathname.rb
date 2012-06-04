@@ -279,6 +279,8 @@ class Pathname
 
   def text_executable?
     %r[#!\s*(/.+)+] === open('r') { |f| f.readline }
+  rescue EOFError
+    false
   end
 
   def incremental_hash(hasher)
