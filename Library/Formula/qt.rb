@@ -22,6 +22,7 @@ class Qt < Formula
       ['--with-qt3support', "Enable deprecated Qt3Support module."],
       ['--with-demos-examples', "Enable Qt demos and examples."],
       ['--with-debug-and-release', "Compile Qt in debug and release mode."],
+      ['--developer', 'Compile and link Qt with Qt developer options']
     ]
   end
 
@@ -67,6 +68,8 @@ class Qt < Formula
     else
       args << "-release"
     end
+
+    args << '-developer-build' if ARGV.include? '--developer'
 
     # Needed for Qt 4.8.1 due to attempting to link moc with gcc.
     ENV['LD'] = ENV.cxx
