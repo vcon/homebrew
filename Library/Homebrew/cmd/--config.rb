@@ -25,8 +25,21 @@ module Homebrew extend self
     @clang_build ||= MacOS.clang_build_version
   end
 
-  def xcode_version
-    @xcode_version || MacOS.xcode_version
+  def describe_xcode
+    @describe_xcode ||= begin
+      xcode = MacOS.xcode_version
+      if MacOS.xcode_installed?
+        xcode += " in '#{MacOS.xcode_prefix}'" unless MacOS.xcode_prefix.to_s == '/Applications/Xcode.app/Contents/Developer'
+      else
+        xcode += ' (guessed)' unless MacOS.xcode_installed?
+      end
+      xcode += ", CLT #{MacOS.clt_version}" if MacOS.clt_installed?
+      xcode
+    end
+  end
+
+  def describe_default_sdk
+    @describe_default_sdk ||= if MacOS.sdk_path.nil? then "N/A" else MacOS.sdk_path end
   end
 
   def sha
@@ -115,7 +128,7 @@ module Homebrew extend self
     #{hardware}
     OS X: #{MACOS_FULL_VERSION}
     Kernel Architecture: #{kernel}
-    Xcode: #{xcode_version}
+    Xcode: #{describe_xcode}
     GCC-4.0: #{gcc_40 ? "build #{gcc_40}" : "N/A"}
     GCC-4.2: #{gcc_42 ? "build #{gcc_42}" : "N/A"}
     LLVM: #{llvm ? "build #{llvm}" : "N/A"}
