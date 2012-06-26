@@ -27,19 +27,20 @@ module Homebrew extend self
 
   def describe_xcode
     @describe_xcode ||= begin
-      xcode = MacOS.xcode_version
-      if MacOS.xcode_installed?
-        xcode += " in '#{MacOS.xcode_prefix}'" unless MacOS.xcode_prefix.to_s == '/Applications/Xcode.app/Contents/Developer'
-      else
-        xcode += ' (guessed)' unless MacOS.xcode_installed?
-      end
-      xcode += ", CLT #{MacOS.clt_version}" if MacOS.clt_installed?
-      xcode
+      default_prefix = case MacOS.version
+        when 10.5, 10.6 then '/Developer'
+        else '/Applications/Xcode.app/Contents/Developer'
+        end
+
+      guess = '(guessed)' unless MacOS.xcode_installed?
+      prefix = "=> #{MacOS.xcode_prefix}" unless MacOS.xcode_prefix.to_s == default_prefix
+
+      [MacOS.xcode_version, guess, prefix].compact.join(' ')
     end
   end
 
-  def describe_default_sdk
-    @describe_default_sdk ||= if MacOS.sdk_path.nil? then "N/A" else MacOS.sdk_path end
+  def describe_clt
+    @describe_clt ||= if MacOS.clt_installed? then MacOS.clt_version else 'N/A' end
   end
 
   def sha
@@ -106,7 +107,7 @@ module Homebrew extend self
     puts "HOMEBREW_PREFIX: #{HOMEBREW_PREFIX}" if HOMEBREW_PREFIX.to_s != "/usr/local"
     puts "HOMEBREW_CELLAR: #{HOMEBREW_CELLAR}" if HOMEBREW_CELLAR.to_s != "#{HOMEBREW_PREFIX}/Cellar"
     puts hardware
-    puts "MacOS: #{MACOS_FULL_VERSION}-#{kernel}"
+    puts "OS X: #{MACOS_FULL_VERSION}-#{kernel}"
     puts "Xcode: #{xcode_version}"
     puts "/usr/bin/ruby: #{RUBY_VERSION}-#{_get_patchlevel}" if RUBY_VERSION.to_f != 1.8
 
@@ -120,15 +121,20 @@ module Homebrew extend self
     puts "X11: #{x11}" unless x11 == "/usr/X11"
   end
 
-  def config_s; <<-EOS.undent
+  def config_s
+    config_s = <<-EOS.undent
     HOMEBREW_VERSION: #{HOMEBREW_VERSION}
     HEAD: #{sha}
     HOMEBREW_PREFIX: #{HOMEBREW_PREFIX}
     HOMEBREW_CELLAR: #{HOMEBREW_CELLAR}
     #{hardware}
-    OS X: #{MACOS_FULL_VERSION}
-    Kernel Architecture: #{kernel}
+    OS X: #{MACOS_FULL_VERSION}-#{kernel}
     Xcode: #{describe_xcode}
+    EOS
+
+    config_s << "CLT: #{describe_clt}\n" if MacOS.xcode_version.to_f >= 4.3
+
+    config_s << <<-EOS.undent
     GCC-4.0: #{gcc_40 ? "build #{gcc_40}" : "N/A"}
     GCC-4.2: #{gcc_42 ? "build #{gcc_42}" : "N/A"}
     LLVM: #{llvm ? "build #{llvm}" : "N/A"}
