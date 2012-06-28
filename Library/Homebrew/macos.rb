@@ -1,251 +1,3 @@
-require 'pathname'
-require 'exceptions'
-require 'macos'
-
-class Tty
-  class <<self
-    def blue; bold 34; end
-    def white; bold 39; end
-    def red; underline 31; end
-    def yellow; underline 33 ; end
-    def reset; escape 0; end
-    def em; underline 39; end
-    def green; color 92 end
-
-    def width
-      `/usr/bin/tput cols`.strip.to_i
-    end
-
-  private
-    def color n
-      escape "0;#{n}"
-    end
-    def bold n
-      escape "1;#{n}"
-    end
-    def underline n
-      escape "4;#{n}"
-    end
-    def escape n
-      "\033[#{n}m" if $stdout.tty?
-    end
-  end
-end
-
-# args are additional inputs to puts until a nil arg is encountered
-def ohai title, *sput
-  title = title.to_s[0, Tty.width - 4] if $stdout.tty? unless ARGV.verbose?
-  puts "#{Tty.blue}==>#{Tty.white} #{title}#{Tty.reset}"
-  puts sput unless sput.empty?
-end
-
-def oh1 title
-  title = title.to_s[0, Tty.width - 4] if $stdout.tty? unless ARGV.verbose?
-  puts "#{Tty.green}==> #{Tty.reset}#{title}"
-end
-
-def opoo warning
-  puts "#{Tty.red}Warning#{Tty.reset}: #{warning}"
-end
-
-def onoe error
-  lines = error.to_s.split'\n'
-  puts "#{Tty.red}Error#{Tty.reset}: #{lines.shift}"
-  puts lines unless lines.empty?
-end
-
-def ofail error
-  onoe error
-  Homebrew.failed = true
-end
-
-def odie error
-  onoe error
-  exit 1
-end
-
-def pretty_duration s
-  return "2 seconds" if s < 3 # avoids the plural problem ;)
-  return "#{s.to_i} seconds" if s < 120
-  return "%.1f minutes" % (s/60)
-end
-
-def interactive_shell f=nil
-  unless f.nil?
-    ENV['HOMEBREW_DEBUG_PREFIX'] = f.prefix
-    ENV['HOMEBREW_DEBUG_INSTALL'] = f.name
-  end
-
-  fork {exec ENV['SHELL'] }
-  Process.wait
-  unless $?.success?
-    puts "Aborting due to non-zero exit status"
-    exit $?
-  end
-end
-
-module Homebrew
-  def self.system cmd, *args
-    puts "#{cmd} #{args*' '}" if ARGV.verbose?
-    fork do
-      yield if block_given?
-      args.collect!{|arg| arg.to_s}
-      exec(cmd, *args) rescue nil
-      exit! 1 # never gets here unless exec failed
-    end
-    Process.wait
-    $?.success?
-  end
-end
-
-# Kernel.system but with exceptions
-def safe_system cmd, *args
-  unless Homebrew.system cmd, *args
-    args = args.map{ |arg| arg.to_s.gsub " ", "\\ " } * " "
-    raise ErrorDuringExecution, "Failure while executing: #{cmd} #{args}"
-  end
-end
-
-# prints no output
-def quiet_system cmd, *args
-  Homebrew.system(cmd, *args) do
-    $stdout.close
-    $stderr.close
-  end
-end
-
-def curl *args
-  curl = Pathname.new '/usr/bin/curl'
-  raise "#{curl} is not executable" unless curl.exist? and curl.executable?
-
-  args = [HOMEBREW_CURL_ARGS, HOMEBREW_USER_AGENT, *args]
-  # See https://github.com/mxcl/homebrew/issues/6103
-  args << "--insecure" if MacOS.version < 10.6
-  args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
-  args << "--silent" unless $stdout.tty?
-
-  safe_system curl, *args
-end
-
-def puts_columns items, star_items=[]
-  return if items.empty?
-
-  if star_items && star_items.any?
-    items = items.map{|item| star_items.include?(item) ? "#{item}*" : item}
-  end
-
-  if $stdout.tty?
-    # determine the best width to display for different console sizes
-    console_width = `/bin/stty size`.chomp.split(" ").last.to_i
-    console_width = 80 if console_width <= 0
-    longest = items.sort_by { |item| item.length }.last
-    optimal_col_width = (console_width.to_f / (longest.length + 2).to_f).floor
-    cols = optimal_col_width > 1 ? optimal_col_width : 1
-
-    IO.popen("/usr/bin/pr -#{cols} -t -w#{console_width}", "w"){|io| io.puts(items) }
-  else
-    puts items
-  end
-end
-
-# Basic command "which" check that works for 10.4 and later.
-# The 10.4 version of which does not support -s, but 10.5 and later does.
-def which cmd
-  path = `/usr/bin/which #{cmd} 2>/dev/null`.chomp
-  if MACOS_VERSION == 10.4
-    if /^no /.match(path) or path.empty?
-      nil
-    else
-      Pathname.new(path)
-    end
-  else
-    if path.empty?
-      nil
-    else
-      Pathname.new(path)
-    end
-  end
-end
-
-def which_editor
-  editor = ENV['HOMEBREW_EDITOR'] || ENV['EDITOR']
-  # If an editor wasn't set, try to pick a sane default
-  return editor unless editor.nil?
-
-  # Find Textmate
-  return 'mate' if which "mate"
-  # Find # BBEdit / TextWrangler
-  return 'edit' if which "edit"
-  # Default to vim
-  return '/usr/bin/vim'
-end
-
-def exec_editor *args
-  return if args.to_s.empty?
-
-  # Invoke bash to evaluate env vars in $EDITOR
-  # This also gets us proper argument quoting.
-  # See: https://github.com/mxcl/homebrew/issues/5123
-  system "bash", "-c", which_editor + ' "$@"', "--", *args
-end
-
-# GZips the given paths, and returns the gzipped paths
-def gzip *paths
-  paths.collect do |path|
-    system "/usr/bin/gzip", path
-    Pathname.new("#{path}.gz")
-  end
-end
-
-# Returns array of architectures that the given command or library is built for.
-def archs_for_command cmd
-  cmd = which(cmd) unless Pathname.new(cmd).absolute?
-  Pathname.new(cmd).archs
-end
-
-def inreplace path, before=nil, after=nil
-  [*path].each do |path|
-    f = File.open(path, 'r')
-    s = f.read
-
-    if before == nil and after == nil
-      s.extend(StringInreplaceExtension)
-      yield s
-    else
-      sub = s.gsub!(before, after)
-      if sub.nil?
-        opoo "inreplace in '#{path}' failed"
-        puts "Expected replacement of '#{before}' with '#{after}'"
-      end
-    end
-
-    f.reopen(path, 'w').write(s)
-    f.close
-  end
-end
-
-def ignore_interrupts
-  std_trap = trap("INT") {}
-  yield
-ensure
-  trap("INT", std_trap)
-end
-
-def nostdout
-  if ARGV.verbose?
-    yield
-  else
-    begin
-      require 'stringio'
-      real_stdout = $stdout
-      $stdout = StringIO.new
-      yield
-    ensure
-      $stdout = real_stdout
-    end
-  end
-end
-
 module MacOS extend self
   def version
     MACOS_VERSION
@@ -299,6 +51,17 @@ module MacOS extend self
     end
   end
 
+  # Locate the "current Xcode folder" via xcode-select. See:
+  # man xcode-select
+  def xcode_folder
+    @xcode_folder ||= `xcode-select -print-path 2>/dev/null`.strip
+  end
+
+  # Xcode 4.3 tools hang if "/" is set
+  def xctools_fucked?
+    xcode_folder == "/"
+  end
+
   def locate tool
     # Don't call tools (cc, make, strip, etc.) directly!
     # Give the name of the binary you look for as a string to this method
@@ -310,30 +73,29 @@ module MacOS extend self
 
     if File.executable? "/usr/bin/#{tool}"
       path = Pathname.new "/usr/bin/#{tool}"
-    elsif not MacOS.xctools_fucked? and system "/usr/bin/xcrun -find #{tool} 1>/dev/null 2>&1"
-      # xcrun was provided first with Xcode 4.3 and allows us to proxy
-      # tool usage thus avoiding various bugs
-      p = `/usr/bin/xcrun -find #{tool}`.chomp
-      if File.executable?  p
-        path = Pathname.new  p
-      else
-        path = nil
-      end
     else
-      # otherwise lets try and figure it out ourselves
-      p = "#{MacOS.dev_tools_path}/#{tool}"
-      if File.executable?  p
-        path = Pathname.new  p
+      # Xcrun was provided first with Xcode 4.3 and allows us to proxy
+      # tool usage thus avoiding various bugs.
+      p = `/usr/bin/xcrun -find #{tool} 2>/dev/null`.chomp unless MacOS.xctools_fucked?
+      if !p.nil? and !p.empty? and File.executable? p
+        path = Pathname.new p
       else
-        # This is for the use-case where xcode-select is not set up with
-        # Xcode 4.3+. The tools in Xcode 4.3+ are split over two locations,
+        # This is for the use-case where xcode-select is not set up correctly
+        # with Xcode 4.3+. The tools in Xcode 4.3+ are split over two locations,
         # usually xcrun would figure that out for us, but it won't work if
-        # xcode-select is not configured properly (i.e. xctools_fucked?).
-        p = "#{MacOS.xcode_prefix}/Toolchains/XcodeDefault.xctoolchain/usr/bin/#{tool}"
-        if File.executable?  p
-          path = Pathname.new  p
+        # xcode-select is not configured properly.
+        p = "#{MacOS.dev_tools_path}/#{tool}"
+        if File.executable? p
+          path = Pathname.new p
         else
-          path = nil
+          # Otherwise lets look in the second location.
+          p = "#{MacOS.xctoolchain_path}/usr/bin/#{tool}"
+          if File.executable? p
+            path = Pathname.new p
+          else
+            # We digged so deep but all is lost now.
+            path = nil
+          end
         end
       end
     end
@@ -345,14 +107,17 @@ module MacOS extend self
     @dev_tools_path ||= if File.exist? "/usr/bin/cc" and File.exist? "/usr/bin/make"
       # probably a safe enough assumption (the unix way)
       Pathname.new "/usr/bin"
+    elsif not xctools_fucked? and system "/usr/bin/xcrun -find make 1>/dev/null 2>&1"
+      # Wherever "make" is there are the dev tools.
+      Pathname.new(`/usr/bin/xcrun -find make`.chomp).dirname
     elsif File.exist? "#{xcode_prefix}/usr/bin/make"
       # cc stopped existing with Xcode 4.3, there are c89 and c99 options though
       Pathname.new "#{xcode_prefix}/usr/bin"
     else
-      # yes this seems dumb, but we can't throw because the existance of
-      # dev tools is not mandatory for installing formula. Eventually we
-      # should make formula specify if they need dev tools or not.
-      Pathname.new "/usr/bin"
+      # Since we are pretty unrelenting in finding Xcode no matter where
+      # it hides, we can now throw in the towel.
+      opoo "You really should consult the `brew doctor`!"
+      ""
     end
   end
 
@@ -372,7 +137,7 @@ module MacOS extend self
 
   def sdk_path(v=MacOS.version)
     # The path of the MacOSX SDK.
-    if !MacOS.xctools_fucked? and File.directory? `xcode-select -print-path 2>/dev/null`.chomp
+    if !MacOS.xctools_fucked? and File.executable? "#{xcode_folder}/usr/bin/make"
       path = `#{locate('xcodebuild')} -version -sdk macosx#{v} Path 2>/dev/null`.strip
     elsif File.directory? '/Developer/SDKs/MacOS#{v}.sdk'
       # the old default (or wild wild west style)
@@ -386,11 +151,6 @@ module MacOS extend self
     else
       Pathname.new path
     end
-  end
-
-  def xctools_fucked?
-    # Xcode 4.3 tools hang if "/" is set
-    @xctools_fucked ||= `/usr/bin/xcode-select -print-path 2>/dev/null`.chomp == "/"
   end
 
   def default_cc
@@ -432,15 +192,14 @@ module MacOS extend self
 
   def xcode_prefix
     @xcode_prefix ||= begin
-      path = `/usr/bin/xcode-select -print-path 2>/dev/null`.chomp
-      path = Pathname.new path
-      if $?.success? and path.directory? and path.absolute?
+      path = Pathname.new xcode_folder
+      if $?.success? and path.absolute? and File.executable? "#{path}/usr/bin/make"
         path
-      elsif File.directory? '/Developer'
+      elsif File.executable? '/Developer/usr/bin/make'
         # we do this to support cowboys who insist on installing
         # only a subset of Xcode
         Pathname.new '/Developer'
-      elsif File.directory? '/Applications/Xcode.app/Contents/Developer'
+      elsif File.executable? '/Applications/Xcode.app/Contents/Developer/usr/bin/make'
         # fallback for broken Xcode 4.3 installs
         Pathname.new '/Applications/Xcode.app/Contents/Developer'
       else
@@ -453,10 +212,10 @@ module MacOS extend self
           path = `mdfind "kMDItemCFBundleIdentifier == 'com.apple.Xcode'"`.strip
         end
         path = "#{path}/Contents/Developer"
-        if path.empty? or not File.directory? path
-          nil
-        else
+        if !path.empty? and File.executable? "#{path}/usr/bin/make"
           Pathname.new path
+        else
+          nil
         end
       end
     end
@@ -481,7 +240,6 @@ module MacOS extend self
     end
   end
 
-
  def xcode_version
     # may return a version string
     # that is guessed based on the compiler, so do not
@@ -498,7 +256,7 @@ module MacOS extend self
       end
 
       # Xcode 4.3 xc* tools hang indefinately if xcode-select path is set thus
-      raise if `xcode-select -print-path 2>/dev/null`.chomp == "/"
+      raise if xctools_fucked?
 
       raise unless which "xcodebuild"
       `xcodebuild -version 2>/dev/null` =~ /Xcode (\d(\.\d)*)/
@@ -572,7 +330,7 @@ module MacOS extend self
 
   def x11_installed?
     # Even if only Xcode (without CLT) is installed, this dylib is there.
-    Pathname.new('/usr/X11/lib/libpng.dylib').exist? or (10.4 == MACOS_VERSION and Pathname.new('/usr/X11R6/lib/X11/lbxproxy').exist?)
+    Pathname.new('/usr/X11/lib/libpng.dylib').exist?
   end
 
   def macports_or_fink_installed?
@@ -646,49 +404,5 @@ module MacOS extend self
     return true unless StandardCompilers.keys.include? xcode
 
     StandardCompilers[xcode].all? {|k,v| MacOS.send(k) == v}
-  end
-end
-
-module GitHub extend self
-  def issues_for_formula name
-    # bit basic as depends on the issue at github having the exact name of the
-    # formula in it. Which for stuff like objective-caml is unlikely. So we
-    # really should search for aliases too.
-
-    name = f.name if Formula === name
-
-    require 'open-uri'
-    require 'vendor/multi_json'
-
-    issues = []
-
-    uri = URI.parse("https://api.github.com/legacy/issues/search/mxcl/homebrew/open/#{name}")
-
-    open uri do |f|
-      MultiJson.decode(f.read)['issues'].each do |issue|
-        # don't include issues that just refer to the tool in their body
-        issues << issue['html_url'] if issue['title'].include? name
-      end
-    end
-
-    issues
-  rescue
-    []
-  end
-
-  def find_pull_requests rx
-    require 'open-uri'
-    require 'vendor/multi_json'
-
-    query = rx.source.delete('.*').gsub('\\', '')
-    uri = URI.parse("https://api.github.com/legacy/issues/search/mxcl/homebrew/open/#{query}")
-
-    open uri do |f|
-      MultiJson.decode(f.read)['issues'].each do |pull|
-        yield pull['pull_request_url'] if rx.match pull['title'] and pull['pull_request_url']
-      end
-    end
-  rescue
-    nil
   end
 end
