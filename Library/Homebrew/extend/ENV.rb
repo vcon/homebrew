@@ -326,12 +326,34 @@ Please take one of the following actions:
       # CMake ignores the variables above
       append 'CMAKE_PREFIX_PATH', '/usr/X11R6', ':'
     else
-      prepend 'PATH', '/usr/X11/bin', ':'
-      # CPPFLAGS are the C-PreProcessor flags, *not* C++!
-      append 'CPPFLAGS', '-I/usr/X11/include'
-      append 'LDFLAGS', '-L/usr/X11/lib'
-      # CMake ignores the variables above
-      append 'CMAKE_PREFIX_PATH', '/usr/X11', ':'
+    # There are some config scripts here that should go in the PATH. This
+    # path is always under MacOS.x11_prefix, even for Xcode-only systems.
+    prepend 'PATH', MacOS.x11_prefix/'bin', ':'
+
+    # Similarily, pkgconfig files are only found under MacOS.x11_prefix.
+    prepend 'PKG_CONFIG_PATH', MacOS.x11_prefix/'lib/pkgconfig', ':'
+    prepend 'PKG_CONFIG_PATH', MacOS.x11_prefix/'share/pkgconfig', ':'
+
+    append 'LDFLAGS', "-L#{MacOS.x11_prefix}/lib"
+    append 'CMAKE_PREFIX_PATH', MacOS.x11_prefix, ':'
+
+    # We prefer XQuartz if it is installed. Otherwise, we look for Apple's
+    # X11. For Xcode-only systems, the headers are found in the SDK.
+    prefix = if MacOS.x11_prefix.to_s == '/opt/X11' or MacOS.clt_installed?
+      MacOS.x11_prefix
+    else
+      MacOS.sdk_path/'usr/X11'
+    end
+
+    append 'CPPFLAGS', "-I#{prefix}/include"
+
+    append 'CMAKE_PREFIX_PATH', prefix, ':'
+    append 'CMAKE_INCLUDE_PATH', prefix/'include', ':'
+
+    unless MacOS.clt_installed?
+      append 'CPPFLAGS', "-I#{prefix}/include/freetype2"
+      append 'CFLAGS', "-I#{prefix}/include"
+    end
     end
   end
   alias_method :libpng, :x11
