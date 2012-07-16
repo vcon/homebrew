@@ -13,7 +13,7 @@ module Homebrew extend self
     git_init_if_necessary
 
     report = Report.new
-    master_updater = Updater.new
+    master_updater = TigerUpdater.new
     master_updater.pull!
     report.merge!(master_updater.report)
 
@@ -65,6 +65,7 @@ class Updater
     safe_system "git checkout -q master"
 
     @initial_revision = read_current_revision
+    @refspec ||= ""
 
     # ensure we don't munge line endings on checkout
     safe_system "git config core.autocrlf false"
@@ -73,8 +74,7 @@ class Updater
     args << "--rebase" if ARGV.include? "--rebase"
     args << "-q" unless ARGV.verbose?
     args << "origin"
-    # the refspec ensures that 'origin/tiger' gets updated
-    args << "refs/heads/tiger:refs/remotes/origin/master"
+    args << @refspec
 
     safe_system "git", *args
 
@@ -119,6 +119,12 @@ class Updater
   end
 end
 
+class TigerUpdater < Updater
+  def initialize
+    # the refspec ensures that 'origin/tiger' gets updated
+    @refspec = "refs/heads/tiger:refs/remotes/origin/master"
+  end
+end
 
 class Report < Hash
 
