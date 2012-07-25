@@ -32,17 +32,17 @@ module Homebrew extend self
         else '/Applications/Xcode.app/Contents/Developer'
         end
 
-      guess = '(guessed)' unless MacOS.xcode_installed?
-      prefix = if MacOS.xcode_installed?
-        "=> #{MacOS.xcode_prefix}" unless MacOS.xcode_prefix.to_s == default_prefix
+      guess = '(guessed)' unless MacOS::Xcode.installed?
+      prefix = if MacOS::Xcode.installed?
+        "=> #{MacOS::Xcode.prefix}" unless MacOS::Xcode.prefix.to_s == default_prefix
       end
 
-      [MacOS.xcode_version, guess, prefix].compact.join(' ')
+      [MacOS::Xcode.version, guess, prefix].compact.join(' ')
     end
   end
 
   def describe_clt
-    @describe_clt ||= if MacOS.clt_installed? then MacOS.clt_version else 'N/A' end
+    @describe_clt ||= if MacOS::CLT.installed? then MacOS::CLT.version else 'N/A' end
   end
 
   def head
@@ -120,7 +120,7 @@ module Homebrew extend self
     Xcode: #{describe_xcode}
     EOS
 
-    config_s << "CLT: #{describe_clt}\n" if MacOS.xcode_version.to_f >= 4.3
+    config_s << "CLT: #{describe_clt}\n" if MacOS::Xcode.version.to_f >= 4.3
 
     config_s << <<-EOS.undent
     GCC-4.0: #{gcc_40 ? "build #{gcc_40}" : "N/A"}
