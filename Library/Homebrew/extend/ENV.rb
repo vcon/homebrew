@@ -9,8 +9,12 @@ module HomebrewEnvExtension
     delete('CLICOLOR_FORCE') # autotools doesn't like this
     remove_cc_etc
 
-    # Mountain Lion no longer ships a few .pcs; make sure we pick up our versions
     if MacOS.mountain_lion?
+      # Fix issue with sed barfing on unicode characters on Mountain Lion.
+      delete('LC_ALL')
+      self['LANG']="C"
+
+      # Mountain Lion no longer ships a few .pcs; make sure we pick up our versions
       prepend 'PKG_CONFIG_PATH',
         HOMEBREW_REPOSITORY/'Library/Homebrew/pkgconfig', ':'
     end
@@ -335,26 +339,26 @@ Please take one of the following actions:
     # Similarily, pkgconfig files are only found under MacOS.x11_prefix.
     prepend 'PKG_CONFIG_PATH', MacOS.x11_prefix/'lib/pkgconfig', ':'
     prepend 'PKG_CONFIG_PATH', MacOS.x11_prefix/'share/pkgconfig', ':'
+#    unless MacOS::XQuartz.installed?
+#      opoo "You do not have X11 installed, this formula may not build."
+#    end
 
-    append 'LDFLAGS', "-L#{MacOS.x11_prefix}/lib"
-    append 'CMAKE_PREFIX_PATH', MacOS.x11_prefix, ':'
+    # There are some config scripts here that should go in the PATH
+    prepend 'PATH', MacOS::XQuartz.bin, ':'
 
-    # We prefer XQuartz if it is installed. Otherwise, we look for Apple's
-    # X11. For Xcode-only systems, the headers are found in the SDK.
-    prefix = if MacOS.x11_prefix.to_s == '/opt/X11' or MacOS::CLT.installed?
-      MacOS.x11_prefix
-    else
-      MacOS.sdk_path/'usr/X11'
-    end
+    prepend 'PKG_CONFIG_PATH', MacOS::XQuartz.lib/'pkgconfig', ':'
+    prepend 'PKG_CONFIG_PATH', MacOS::XQuartz.share/'pkgconfig', ':'
 
-    append 'CPPFLAGS', "-I#{prefix}/include"
+    append 'LDFLAGS', "-L#{MacOS::XQuartz.lib}"
+    append 'CMAKE_PREFIX_PATH', MacOS::XQuartz.prefix, ':'
+    append 'CMAKE_INCLUDE_PATH', MacOS::XQuartz.include, ':'
 
-    append 'CMAKE_PREFIX_PATH', prefix, ':'
-    append 'CMAKE_INCLUDE_PATH', prefix/'include', ':'
+    append 'CPPFLAGS', "-I#{MacOS::XQuartz.include}"
 
     unless MacOS::CLT.installed?
-      append 'CPPFLAGS', "-I#{prefix}/include/freetype2"
-      append 'CFLAGS', "-I#{prefix}/include"
+      append 'CMAKE_PREFIX_PATH', MacOS.sdk_path/'usr/X11', ':'
+      append 'CPPFLAGS', "-I#{MacOS::XQuartz.include}/freetype2"
+      append 'CFLAGS', "-I#{MacOS::XQuartz.include}"
     end
     end
   end

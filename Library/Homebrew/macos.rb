@@ -1,8 +1,6 @@
 module MacOS extend self
 
   MDITEM_BUNDLE_ID_KEY = "kMDItemCFBundleIdentifier"
-  APPLE_X11_BUNDLE_ID = "org.x.X11"
-  XQUARTZ_BUNDLE_ID = "org.macosforge.xquartz.X11"
 
   def version
     MACOS_VERSION
@@ -271,8 +269,8 @@ module MacOS extend self
   end
 
   def mdfind attribute, id
-    path = `mdfind "#{attribute} == '#{id}'"`.strip
-    Pathname.new(path) unless path.empty?
+    path = `mdfind "#{attribute} == '#{id}'"`.split("\n").first
+    Pathname.new(path) unless path.nil? or path.empty?
   end
 
   def pkgutil_info id
@@ -280,4 +278,5 @@ module MacOS extend self
   end
 end
 
-require 'xcode'
+require 'macos/xcode'
+require 'macos/xquartz'
