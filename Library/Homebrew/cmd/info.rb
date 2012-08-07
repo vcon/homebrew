@@ -21,7 +21,7 @@ module Homebrew extend self
   end
 
   def github_fork
-    if which 'git'
+    if which 'git' and (HOMEBREW_REPOSITORY/".git").directory?
       if `git remote -v` =~ %r{origin\s+(https?://|git(?:@|://))github.com[:/](.+)/homebrew}
         $2
       end
@@ -68,10 +68,7 @@ module Homebrew extend self
     end
 
     puts "Depends on: #{f.deps*', '}" unless f.deps.empty?
-    conflicts = []
-    f.external_deps.each do |dep|
-      conflicts << dep.formula if dep.is_a? ConflictRequirement
-    end
+    conflicts = f.conflicts.map { |c| c.formula }
     puts "Conflicts with: #{conflicts*', '}" unless conflicts.empty?
 
     if f.rack.directory?
