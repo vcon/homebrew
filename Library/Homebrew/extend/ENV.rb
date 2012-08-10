@@ -375,10 +375,15 @@ Please take one of the following actions:
     append 'LDFLAGS', '-arch i386'
   end
 
+  if Hardware.cpu_type == :ppc
+  # ppc and ppc64 (no i386)
+  def universal_binary
+    append_to_cflags '-arch ppc -arch ppc64'
+    append 'LDFLAGS', '-arch ppc -arch ppc64'
+  end
+  else
   # i386 and x86_64 (no PPC)
   def universal_binary
-    return if Hardware.cpu_type == :ppc
-
     append_to_cflags '-arch i386 -arch x86_64'
     replace_in_cflags '-O4', '-O3' # O4 seems to cause the build to fail
     append 'LDFLAGS', '-arch i386 -arch x86_64'
@@ -387,6 +392,7 @@ Please take one of the following actions:
       # Can't mix "-march" for a 32-bit CPU  with "-arch x86_64"
       replace_in_cflags(/-march=\S*/, '-Xarch_i386 \0') if Hardware.is_32_bit?
     end
+  end
   end
 
   def prepend key, value, separator = ' '
