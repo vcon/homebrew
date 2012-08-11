@@ -29,7 +29,8 @@ class Glib < Formula
       ]}
     p[:p0] = %W[
         https://trac.macports.org/export/95596/trunk/dports/devel/glib2/files/patch-configure.diff
-      ] if build.universal?
+        https://trac.macports.org/raw-attachment/ticket/31221/patch-gobject-gtype.h.2.diff
+      ] if build_universal?
     p
   end
 
