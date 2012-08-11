@@ -32,10 +32,16 @@ class Qt < Formula
   depends_on 'sqlite' if MacOS.leopard?
 
   def patches
+    if MacOS.leopard?
+      [
     # fixes conflict on osx 10.5. See qt bug:
     # https://bugreports.qt-project.org/browse/QTBUG-23258
-    if MacOS.leopard?
-      "http://bugreports.qt-project.org/secure/attachment/26712/Patch-Qt-4.8-for-10.5"
+        "http://bugreports.qt-project.org/secure/attachment/26712/Patch-Qt-4.8-for-10.5",
+       # Make it build on PPC:
+       # https://bugs.webkit.org/show_bug.cgi?id=93397
+        "https://gist.github.com/raw/3289864/a0fb5425092cc2505d8ae31159e6bd484c209cc7/qt-webkit-ppc32.diff",
+      ]
+
     # add support for Mountain Lion
     # should be unneeded for 4.8.3
     elsif MacOS.mountain_lion?
