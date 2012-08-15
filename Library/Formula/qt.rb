@@ -14,6 +14,16 @@ class Qt < Formula
 
   head 'git://gitorious.org/qt/qt.git', :branch => 'master'
 
+  option :universal
+  option 'with-qtdbus', 'Enable QtDBus module'
+  option 'with-qt3support', 'Enable deprecated Qt3Support module'
+  option 'with-demos-examples', 'Eanble Qt demos and examples'
+  option 'with-debug-and-release', 'Compile Qt in debug and release mode'
+  option 'developer', 'Compile and link Qt with developer options'
+
+  depends_on "d-bus" if build.include? 'with-qtdbus'
+  depends_on 'sqlite' if MacOS.leopard?
+
   fails_with :clang do
     build 421
   end
@@ -69,24 +79,24 @@ class Qt < Formula
 
     args << "-plugin-sql-mysql" if (HOMEBREW_CELLAR+"mysql").directory?
 
-    if ARGV.include? '--with-qtdbus'
+    if build.include? 'with-qtdbus'
       args << "-I#{Formula.factory('d-bus').lib}/dbus-1.0/include"
       args << "-I#{Formula.factory('d-bus').include}/dbus-1.0"
     end
 
-    if ARGV.include? '--with-qt3support'
+    if build.include? 'with-qt3support'
       args << "-qt3support"
     else
       args << "-no-qt3support"
     end
 
-    unless ARGV.include? '--with-demos-examples'
+    unless build.include? 'with-demos-examples'
       args << "-nomake" << "demos" << "-nomake" << "examples"
     end
 
     args << '-arch' << 'ppc'
 
-    if ARGV.include? '--with-debug-and-release'
+    if build.include? 'with-debug-and-release'
       args << "-debug-and-release"
       # Debug symbols need to find the source so build in the prefix
       mv "../qt-everywhere-opensource-src-#{version}", "#{prefix}/src"
@@ -95,7 +105,7 @@ class Qt < Formula
       args << "-release"
     end
 
-    args << '-developer-build' if ARGV.include? '--developer'
+    args << '-developer-build' if build.include? 'developer'
 
     # Needed for Qt 4.8.1 due to attempting to link moc with gcc.
     ENV['LD'] = ENV.cxx
