@@ -304,6 +304,16 @@ class Formula
     end
   end
 
+  def self.select
+    ff = []
+    each{ |f| ff << f if yield(f) }
+    ff
+  end
+
+  def self.installed
+    HOMEBREW_CELLAR.children.map{ |rack| factory(rack.basename) rescue nil }.compact
+  end
+
   def inspect
     name
   end
@@ -428,6 +438,12 @@ class Formula
       f_dep = Formula.factory dep.to_s
       expand_deps(f_dep) << f_dep
     end
+  end
+
+  def recursive_requirements
+    reqs = recursive_deps.map { |dep| dep.requirements }.to_set
+    reqs << requirements
+    reqs.flatten
   end
 
 protected
