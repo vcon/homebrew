@@ -28,7 +28,7 @@ class Gmp < Formula
     system "make"
     ENV.j1 # Doesn't install in parallel on 8-core Mac Pro
     # Upstream implores users to always run the test suite
-    system "make check" unless ARGV.include? "--skip-check"
+    system "make check" unless build.include? "skip-check"
     system "make install"
   end
 end
